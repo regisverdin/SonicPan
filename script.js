@@ -34,6 +34,7 @@ for(var i = numChannels; i >= 0; i--) {
     select.add(option, 0);
 }
 
+var speakerArray;   //speakerArray[i][0] is xpos, [i][1] is ypos, [i][2] is the node. i is the speaker/channel number
 
 function drawSpeakers(numSpeaks, offset) {
     var center = canvas.width / 2.0;
@@ -41,8 +42,12 @@ function drawSpeakers(numSpeaks, offset) {
     var r = maxRadius;
     var h = center;
     var k = center;
-    var spriteSize = canvas.width / 20.0;
     var tOffset = offset; 
+    var spriteSize = canvas.width / 20.0;
+    var fontSize = canvas.width / 18.0;
+    var fontXOffset;
+    var fontYOffset = -(canvas.width / 200.0);
+    speakerArray = [];
 
     canvasContext.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -50,22 +55,77 @@ function drawSpeakers(numSpeaks, offset) {
         var t = i * ((2 * Math.PI) / numSpeaks) - tOffset;
         var x = (r * Math.cos(t)) + h;
         var y = (r * Math.sin(t)) + k;
+        var speakerIndex = numSpeaks - i + 1;
+        
+        if (speakerIndex >= 10) { fontXOffset = -(canvas.width / 170.0);}
+        else { fontXOffset = canvas.width / 160.0; }
+
+        var speakerPosX = x-(spriteSize/2) + fontXOffset;
+        var speakerPosY = y+(spriteSize/2) + fontYOffset;
 
         canvasContext.fillStyle = "blue";
         canvasContext.fillRect(x-(spriteSize/2),y-(spriteSize/2),spriteSize, spriteSize);
+        canvasContext.fillStyle = "black";
+        canvasContext.font = fontSize + "px serif";
+        canvasContext.fillText(speakerIndex.toString(), speakerPosX, speakerPosY);
+
+        speakerArray[speakerIndex-1] = [speakerPosX, speakerPosY];
+    }
+}
+
+canvas.onmousemove = assignChannelVolume;
+
+function assignChannelVolume(event) {
+    //need to: take speakerArray. get current mouse pos. find eucl distance from each speaker to mouse pos. update gains for each node based on this
+    var canvasRect = canvas.getBoundingClientRect();
+    var mouseX = Math.floor((event.clientX-canvasRect.left)/(canvasRect.right-canvasRect.left)*canvas.width);   //mouse position rel to canvas
+    var mouseY = Math.floor((event.clientY-canvasRect.top)/(canvasRect.bottom-canvasRect.top)*canvas.height);
+    console.log(mouseX + ", " + mouseY);
+
+    if(speakerArray) {
+        var r = (canvas.width / 2.0) - 20;
+        for (var i = 0; i < speakerArray.length; i++) {
+            //get distance from current event point in canvas to current speaker in array
+            var a = mouseX - speakerArray[i][0];
+            var b = mouseY - speakerArray[i][1];
+            var c = Math.sqrt((a*a) + (b*b));
+            console.log("c = " + c);
+            console.log("r = " + r);
+
+            //gain as percentage of diameter
+            var gainAmt = 1-(c/(2*r));
+            console.log("gain = " + gainAmt);
+
+            //set gain for each channel
+            speakerArray[i][2].gain.value = gainAmt;
+        }
     }
 }
 
 
-
 function selectSpeakerNum() {
     var numSpeakers = document.getElementById("channels").value;
+    audioContext.destination.channelCount = numSpeakers;
     if(numSpeakers == 0) return;
     console.log("speakers: ", numSpeakers);
 
-    var angleOffset = +(Math.PI / 2.0) //default theta offset (rotation of speaker positions)
+    var angleOffset = document.getElementById("slider").value;
     drawSpeakers(numSpeakers, angleOffset);
-    audioContext.destination.channelCount = numChannels;
+
+    //add or remove buffer nodes for each channel (drawSpeakers() takes care of clearing the old speakerArray). DO I NEED TO REMOVE POINTERS TO DELETED NODES?
+    merger = audioContext.createChannelMerger(numSpeakers);
+    merger.connect(audioContext.destination);
+    for (var i = 0; i < numSpeakers; i++) {
+        var source = audioContext.createBufferSource(); //Creates an AudioBufferSourceNode
+        source.buffer = audioContext.audioBuffer; //Loads the buffer into the source node
+        gain = audioContext.createGain();
+        source.connect(gain);
+        gain.connect(merger, 0, i); // This assigns the source to a specific channel output on the destination
+        source.loop = true;
+        source.start(0);
+
+        speakerArray[i][2] = gain;
+    }
 }
 
 function rotateSpeakers() {
@@ -74,19 +134,6 @@ function rotateSpeakers() {
     drawSpeakers(numSpeakers, angleOffset);
 }
 
-
-document.onmousemove = handleMouseMove;
-function handleMouseMove(event) {
-
-    // var dot, eventDoc, doc, body, pageX, pageY;
-    // console.log("prev x:" + prevX + "; prev y: " + prevY);
-    // canvasContext.fillStyle = "black";
-    // canvasContext.fillRect(prevX, prevY,50,50);
-    // canvasContext.fillStyle = "green";
-    // canvasContext.fillRect(event.pageX, event.pageY,50,50);
-    // prevX = event.pageX;
-    // prevY = event.pageY;
-}
 
 
 
@@ -107,14 +154,15 @@ function loadFile(file) {
 loadFile("sample.wav")
 
 // Connect buffer to destination, and start play/loop
-canvas.onclick = function playBuffer(){
-    var source = audioContext.createBufferSource(); //Creates an AudioBufferSourceNode
-    source.buffer = audioContext.audioBuffer; //Loads the buffer into the source node
-    var merger = audioContext.createChannelMerger(2);
+var merger;
+canvas.onload = function playBuffer(){
+    // var source = audioContext.createBufferSource(); //Creates an AudioBufferSourceNode
+    // source.buffer = audioContext.audioBuffer; //Loads the buffer into the source node
+    // merger = audioContext.createChannelMerger(2);
 
-    source.connect(merger, 0, 1); // This assigns the source to a specific channel output on the destination
-    merger.connect(audioContext.destination);
+    // source.connect(merger, 0, 1); // This assigns the source to a specific channel output on the destination
+    // merger.connect(audioContext.destination);
 
-    source.loop = true;
-    source.start(0);
+    // source.loop = true;
+    // source.start(0);
 }
