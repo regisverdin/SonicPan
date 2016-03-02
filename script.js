@@ -35,44 +35,49 @@ for(var i = numChannels; i >= 0; i--) {
 }
 
 
-function selectSpeakerNum() {
-    var numSpeakers = document.getElementById("channels").value;
-    console.log("speakers: ", numSpeakers);
-
-    drawSpeakers(numSpeakers);
-    audioContext.destination.channelCount = numChannels;
-
-}
-
-
-function drawSpeakers(numSpeaks) {
-    var center = canvas.innerHeight / 2.0;
-    var maxRadius = center - 100.0;
+function drawSpeakers(numSpeaks, offset) {
+    var center = canvas.width / 2.0;
+    var maxRadius = center - 20.0;
     var r = maxRadius;
     var h = center;
     var k = center;
+    var spriteSize = canvas.width / 20.0;
+    var tOffset = offset; 
+
+    canvasContext.clearRect(0, 0, canvas.width, canvas.height);
 
     for(var i = 1; i <= numSpeaks; i++) {
-        var t = i * ((2.0 * Math.PI) / numSpeaks);
+        var t = i * ((2 * Math.PI) / numSpeaks) - tOffset;
         var x = (r * Math.cos(t)) + h;
         var y = (r * Math.sin(t)) + k;
 
-        console.log("x: " + x + "; y: " + y);
-        // canvasContext.fillStyle = "black";
-        // canvasContext.fillRect(0, 0, window.innerHeight - 100, window.innerHeight - 100);
-
-        canvasContext.fillStyle = "green";
-        canvasContext.fillRect(x,y,10,10);
-
+        canvasContext.fillStyle = "blue";
+        canvasContext.fillRect(x-(spriteSize/2),y-(spriteSize/2),spriteSize, spriteSize);
     }
+}
 
-    //location of points on circle given angle and radius
 
+
+function selectSpeakerNum() {
+    var numSpeakers = document.getElementById("channels").value;
+    if(numSpeakers == 0) return;
+    console.log("speakers: ", numSpeakers);
+
+    var angleOffset = +(Math.PI / 2.0) //default theta offset (rotation of speaker positions)
+    drawSpeakers(numSpeakers, angleOffset);
+    audioContext.destination.channelCount = numChannels;
+}
+
+function rotateSpeakers() {
+    var numSpeakers = document.getElementById("channels").value;
+    var angleOffset = document.getElementById("slider").value;
+    drawSpeakers(numSpeakers, angleOffset);
 }
 
 
 document.onmousemove = handleMouseMove;
-function handleMouseMove(event, prevX, prevY) {
+function handleMouseMove(event) {
+
     // var dot, eventDoc, doc, body, pageX, pageY;
     // console.log("prev x:" + prevX + "; prev y: " + prevY);
     // canvasContext.fillStyle = "black";

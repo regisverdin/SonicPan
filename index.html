@@ -10,6 +10,9 @@
 	<label>Number of speakers:</label>
     <select onchange="selectSpeakerNum()" id="channels" name="channels"></select>
     <br />
+    <label>Rotate speaker layout:</label>
+    <input oninput="rotateSpeakers()" type="range" min = "-3.14159" max = "3.14159" step="0.0001" id="slider"></input>
+    <br />
     <div>
 		<canvas id="canvas"></canvas>
 	</div>
