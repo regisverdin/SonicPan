@@ -1,7 +1,23 @@
+* {
+	background-color: #1d2120;
+}
+
+.light {
+	font-family: Tahoma, Geneva, sans-serif;
+	font-size: 30px;
+	color: gray;
+}
+
+h1 {
+	font-family: Candara, Geneva, sans-serif;
+	font-size: 50px;
+	color: white;
+}
+
 canvas {
 	background-color: gray;
 	padding: 0;
     margin: auto;
     display: block;
-    /*width: 800px;*/
+    border: 1px dashed black;
 }
