@@ -21,3 +21,10 @@ canvas {
     display: block;
     border: 1px dashed black;
 }
+
+
+.leftcol {
+    width:300px;
+    height:auto;
+    float:left;
+ }
