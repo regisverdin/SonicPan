@@ -20,6 +20,8 @@ canvas {
     margin: auto;
     display: block;
     border: 1px dashed black;
+    top: 100px;
+    margin-top: 50px;
 }
 
 
@@ -27,4 +29,9 @@ canvas {
     width:300px;
     height:auto;
     float:left;
+    position: absolute;
+ }
+
+ #play {
+ 	margin: 0 auto;
  }
