@@ -1,3 +1,14 @@
+/* TO DO: 
+- add playback controls for each loaded sample. scrub, etc.; Also, master play button, solo/mute?
+- add delays (slider input (http://stackoverflow.com/questions/8696731/creating-a-vertical-slider-html-element for vert slider) and nodes.
+- click/drag to change panning position. display pan position.
+- move each speaker icon independently
+- midi input to control pan position.
+- pan automation.
+*/
+
+
+
 //Canvas setup
 
 var canvas = document.getElementById("canvas");
@@ -21,6 +32,17 @@ if (contextClass) {
   window.alert("webaudio is not available! use chrome please")
 }
 audioContext.bufferList = new Array();
+
+
+// File load setup
+
+// Check for the various File API support.
+if (window.File && window.FileReader && window.FileList && window.Blob) {
+  // Great success! All the File APIs are supported.
+} else {
+  alert('The File APIs are not fully supported in this browser.');
+}
+
 
 
 // Populate dropdown for selecting number of channels
@@ -66,34 +88,63 @@ function selectSpeakerNum() {
     var spanNode = document.getElementById("sampleMenu");
 
     for (var i = 1; i <= numSpeakers; i++) {
-        var newSelect = document.createElement("select");
-        newSelect.setAttribute("id", "speaker" + i);
-        newSelect.setAttribute("onchange", "connectBuffer(this)");
-        newSelect.setAttribute("class", "light");
 
-        var newLabel = document.createElement("label");
-        newLabel.innerHTML = i + " :";
-        // newElement.setAttribute("id", i);
-        spanNode.appendChild(newLabel);
-        spanNode.appendChild(newSelect);
+        var newInput = document.createElement("input");
+        newInput.addEventListener('change', handleFileSelect, false);
+        newInput.setAttribute("type", "file");
+        newInput.setAttribute("id", "files");
+        newInput.setAttribute("name", "files[]");
+
+        spanNode.appendChild(newInput);
         spanNode.appendChild(document.createElement("br"));
+
+
+        // // OLD VERSION OF CLIP SELECTION
+        // var newSelect = document.createElement("select");
+        // newSelect.setAttribute("id", "speaker" + i);
+        // newSelect.setAttribute("onchange", "connectBuffer(this)");
+        // newSelect.setAttribute("class", "light");
+
+        // var newLabel = document.createElement("label");
+        // newLabel.innerHTML = i + " :";
+        // // newElement.setAttribute("id", i);
+        // spanNode.appendChild(newLabel);
+        // spanNode.appendChild(newSelect);
+        // spanNode.appendChild(document.createElement("br"));
     
 
-        for(var j = audioContext.bufferList.length-1; j >= 0; j--) {    //SET THIS DYNAMICALLY LATER... not sure how with async fileload (i < audioContext.bufferList.length)
-            var option = document.createElement('option');
-            option.text = option.value = audioContext.bufferList[j][0];
-            newSelect.add(option, 0);
-        }
+        // for(var j = audioContext.bufferList.length-1; j >= 0; j--) {    //SET THIS DYNAMICALLY LATER... not sure how with async fileload (i < audioContext.bufferList.length)
+        //     var option = document.createElement('option');
+        //     option.text = option.value = audioContext.bufferList[j][0];
+        //     newSelect.add(option, 0);
+        // }
 
-        var blankOption = document.createElement('option');
-        blankOption.value = -1;
-        blankOption.text = "--choose a clip--";
-        newSelect.add(blankOption, 0);
+        // var blankOption = document.createElement('option');
+        // blankOption.value = -1;
+        // blankOption.text = "--choose a clip--";
+        // newSelect.add(blankOption, 0);
     //Add delay fields
 
     }
 
 }
+
+
+function handleFileSelect(evt) {
+    var files = evt.target.files; // FileList object
+    console.log("here");
+
+    // files is a FileList of File objects. List some properties.
+    var output = [];
+    for (var i = 0, f; f = files[i]; i++) {
+      output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a', ') - ',
+                  f.size, ' bytes, last modified: ',
+                  f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a',
+                  '</li>');
+    }
+    document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
+}
+
 
 
 
@@ -212,7 +263,7 @@ canvas.onmousemove = function assignChannelVolume(event) {
                 // console.log("r = " + r);
 
                 //gain as percentage of radius (roughly)
-                var gainAmt = Math.max(0, 1-(c/(1.2*r)));
+                var gainAmt = Math.max(0, 1-(c/(1.4*r)));
                 // console.log("gain = " + gainAmt);
 
                 //set gain for each channel
