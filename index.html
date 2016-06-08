@@ -1,1 +1,33 @@
-test run!
+<!DOCTYPE html>
+<html>
+<head>
+	<title>SonicPan</title>
+    <link rel='stylesheet' type='text/css' href='style.css'/>
+</head>
+
+<body>
+    <div class="leftcol">
+        <h1>Sonic Pan</h1>
+        <div>
+            <img id="play" src="playButton.png" height="30%" width="30%" onclick="play()"></img>
+        </div>
+        <hr />
+        <label class = "light">number of speakers:</label>
+        <select class = "light" onchange="selectSpeakerNum()" id="channels" name="channels"></select>
+        <hr />
+        <br />
+        <label class = "light">rotate speaker layout:</label>
+        <input class = "light" oninput="rotateSpeakers()" value="0" type="range" min = "-3.14159" max = "3.14159" step="0.0001" id="slider"></input>
+        <hr />
+        <br />
+        <span class = "light" id="sampleMenu">
+        </span>
+    </div>
+	<div id="canvasDiv">
+        <canvas id="canvas"></canvas>
+    </div>
+	<script type='text/javascript' src='script.js'></script>
+
+</body>
+
+</html>
